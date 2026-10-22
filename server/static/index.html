@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AcoustiScan</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">
+    <span class="title">AcoustiScan</span>
+    <span class="subtitle">Microphone capture console</span>
+  </div>
+  <div class="topinfo">
+    <span>Laptop <b id="info-ip">&ndash;</b></span>
+    <span><b id="info-online">0</b> of <b id="info-total">0</b> nodes online</span>
+    <span id="info-clock">&ndash;</span>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="side">
+    <section class="box">
+      <div class="box-head"><h2>Nodes</h2><span class="muted" id="nodes-hint">updates every 2 s</span></div>
+      <div id="node-list" class="node-list">
+        <div class="empty">No nodes found yet. Power a provisioned node on the same network; it appears here within a few seconds.</div>
+      </div>
+      <form id="add-form" class="add-form" autocomplete="off">
+        <label for="add-ip">Add a node by IP address</label>
+        <div class="row">
+          <input id="add-ip" placeholder="172.30.40.207">
+          <button type="submit" id="add-btn">Add</button>
+        </div>
+        <div id="add-msg" class="msg"></div>
+      </form>
+    </section>
+  </aside>
+
+  <main class="main">
+    <section class="box" id="capture-box">
+      <div class="box-head">
+        <h2 id="sel-title">Select a node</h2>
+        <span id="sel-status" class="muted"></span>
+      </div>
+      <div class="capture-controls">
+        <fieldset class="field">
+          <legend>Duration</legend>
+          <label><input type="radio" name="dur" value="1"> 1 s</label>
+          <label><input type="radio" name="dur" value="5"> 5 s</label>
+          <label><input type="radio" name="dur" value="10" checked> 10 s</label>
+          <label><input type="radio" name="dur" value="30"> 30 s</label>
+        </fieldset>
+        <div class="field">
+          <label for="label">Label (optional)</label>
+          <input id="label" placeholder="e.g. speech test, 40 cm" maxlength="80">
+        </div>
+        <button id="start" disabled>Start capture</button>
+      </div>
+      <div class="progress">
+        <div class="bar"><div id="bar-fill"></div></div>
+        <div id="progress-text" class="muted">Ready</div>
+      </div>
+    </section>
+
+    <section id="results" hidden>
+      <div class="section-head">
+        <h2>Statistics of the last capture</h2>
+        <span id="result-meta" class="muted"></span>
+      </div>
+      <div class="tiles" id="tiles"></div>
+
+      <section class="box chart-box">
+        <div class="box-head"><h2>Waveform</h2><span class="muted">amplitude as a fraction of full scale</span></div>
+        <div class="chart-wrap" id="wave-wrap">
+          <svg id="wave" viewBox="0 0 1000 230" role="img" aria-label="Waveform"></svg>
+          <div class="tip" id="wave-tip"></div>
+        </div>
+      </section>
+
+      <div class="charts">
+        <section class="box chart-box">
+          <div class="box-head"><h2>Spectrum</h2><span class="muted">dBFS, 4096-point FFT averaged</span></div>
+          <div class="chart-wrap" id="spec-wrap">
+            <svg id="spec" viewBox="0 0 640 260" role="img" aria-label="Spectrum"></svg>
+            <div class="tip" id="spec-tip"></div>
+          </div>
+        </section>
+        <section class="box chart-box">
+          <div class="box-head"><h2>Spectrogram</h2><span class="muted">0 to 8 kHz, darker = louder</span></div>
+          <div class="chart-wrap">
+            <canvas id="sgram" width="640" height="256" aria-label="Spectrogram"></canvas>
+            <div class="axis-row" id="sgram-axis"></div>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="box" id="history-box">
+      <div class="box-head"><h2>Capture history <span id="hist-node" class="muted"></span></h2></div>
+      <div class="table-wrap">
+        <table id="history">
+          <thead>
+            <tr><th>Time</th><th>Label</th><th>Length</th><th>Peak</th><th>RMS</th><th>Dominant</th><th>Result</th><th></th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="empty" id="hist-empty">No captures yet for this node.</div>
+    </section>
+  </main>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

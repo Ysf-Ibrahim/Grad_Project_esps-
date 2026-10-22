@@ -1,0 +1,599 @@
+<title>AcoustiScan Console</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  /* ---------- tokens (light) ---------- */
+  :root {
+    --plane: #f3f4f6;
+    --surface: #ffffff;
+    --surface-2: #f8f9fb;
+    --ink: #111827;
+    --ink-2: #4b5563;
+    --muted: #6b7280;
+    --hair: #e5e7eb;
+    --grid: #eceef2;
+    --axis: #c9ccd3;
+    --accent: #0e7490;
+    --accent-ink: #ffffff;
+    --accent-soft: #e0f2f7;
+    --series: #2a78d6;
+    --series-fill: rgba(42, 120, 214, 0.14);
+    --good: #0ca30c;
+    --warn: #fab219;
+    --crit: #d03b3b;
+    --good-soft: #e6f6e6;
+    --warn-soft: #fff4d6;
+    --crit-soft: #fbe5e5;
+    --node1: #2a78d6;
+    --node2: #eb6834;
+    --node3: #1baf7a;
+    --node4: #eda100;
+    --shadow: 0 1px 2px rgba(16, 24, 40, 0.05), 0 6px 16px rgba(16, 24, 40, 0.06);
+    --radius: 10px;
+    --font: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+    --heat0: #f3f6fb; --heat1: #cde2fb; --heat2: #86b6ef; --heat3: #3987e5; --heat4: #1c5cab; --heat5: #0d366b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --plane: #0f1115; --surface: #181b21; --surface-2: #1f232a;
+      --ink: #f3f4f6; --ink-2: #c3c6cc; --muted: #8b909a;
+      --hair: #2a2f37; --grid: #23272e; --axis: #3a3f48;
+      --accent: #22b8cf; --accent-ink: #06282e; --accent-soft: #12343a;
+      --series: #3987e5; --series-fill: rgba(57, 135, 229, 0.2);
+      --good-soft: #10301a; --warn-soft: #3a2f0e; --crit-soft: #3a1717;
+      --node1: #3987e5; --node2: #d95926; --node3: #199e70; --node4: #c98500;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 6px 16px rgba(0, 0, 0, 0.35);
+      --heat0: #181b21; --heat1: #104281; --heat2: #1c5cab; --heat3: #3987e5; --heat4: #86b6ef; --heat5: #cde2fb;
+    }
+  }
+  :root[data-theme="dark"] {
+    --plane: #0f1115; --surface: #181b21; --surface-2: #1f232a;
+    --ink: #f3f4f6; --ink-2: #c3c6cc; --muted: #8b909a;
+    --hair: #2a2f37; --grid: #23272e; --axis: #3a3f48;
+    --accent: #22b8cf; --accent-ink: #06282e; --accent-soft: #12343a;
+    --series: #3987e5; --series-fill: rgba(57, 135, 229, 0.2);
+    --good-soft: #10301a; --warn-soft: #3a2f0e; --crit-soft: #3a1717;
+    --node1: #3987e5; --node2: #d95926; --node3: #199e70; --node4: #c98500;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 6px 16px rgba(0, 0, 0, 0.35);
+    --heat0: #181b21; --heat1: #104281; --heat2: #1c5cab; --heat3: #3987e5; --heat4: #86b6ef; --heat5: #cde2fb;
+  }
+
+  /* ---------- base ---------- */
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--plane); color: var(--ink);
+    font-family: var(--font); font-size: 14px; line-height: 1.45;
+    padding-inline: 16px; padding-block: 0 32px;
+  }
+  h1, h2, h3 { margin: 0; text-wrap: balance; }
+  h2 { font-size: 15px; font-weight: 600; letter-spacing: 0.01em; }
+  .eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  button { font: inherit; cursor: pointer; }
+  button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ---------- top bar ---------- */
+  .topbar {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+    display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+    margin-inline: -16px; padding: 12px 24px;
+    background: var(--surface); border-bottom: 1px solid var(--hair);
+  }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand .mark { width: 34px; height: 34px; border-radius: 9px; background: var(--accent); display: grid; place-items: center; }
+  .brand .mark svg { width: 22px; height: 22px; }
+  .brand h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
+  .brand .sub { font-size: 12px; color: var(--muted); }
+  .topbar .spacer { flex: 1; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px;
+    border: 1px solid var(--hair); background: var(--surface-2); font-size: 12px; color: var(--ink-2); white-space: nowrap;
+  }
+  .chip b { color: var(--ink); font-weight: 600; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .dot.good { background: var(--good); } .dot.warn { background: var(--warn); } .dot.crit { background: var(--crit); } .dot.off { background: var(--axis); }
+
+  /* ---------- layout ---------- */
+  .layout { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 20px; margin-top: 20px; max-width: 1500px; margin-inline: auto; }
+  @media (max-width: 980px) { .layout { grid-template-columns: 1fr; } }
+
+  .panel { background: var(--surface); border: 1px solid var(--hair); border-radius: var(--radius); box-shadow: var(--shadow); }
+  .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--hair); }
+  .panel-body { padding: 16px; }
+
+  /* ---------- node rail ---------- */
+  .rail { display: flex; flex-direction: column; gap: 16px; align-self: start; position: sticky; top: 76px; }
+  @media (max-width: 980px) { .rail { position: static; } }
+  .rail-actions { display: flex; gap: 8px; padding: 12px 16px; border-bottom: 1px solid var(--hair); background: var(--surface-2); border-radius: var(--radius) var(--radius) 0 0; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--hair); background: var(--surface); color: var(--ink); font-weight: 500; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .btn.small { padding: 6px 10px; font-size: 12px; }
+  .btn[disabled] { opacity: 0.5; cursor: not-allowed; }
+  .select { padding: 8px 10px; border-radius: 8px; border: 1px solid var(--hair); background: var(--surface); color: var(--ink); font: inherit; }
+
+  .node { display: grid; grid-template-columns: 6px 1fr; border-bottom: 1px solid var(--hair); }
+  .node:last-child { border-bottom: 0; border-radius: 0 0 var(--radius) var(--radius); }
+  .node .stripe { background: var(--nc); border-radius: 0 3px 3px 0; margin: 10px 0; }
+  .node .body { padding: 12px 14px 12px 12px; display: grid; gap: 8px; }
+  .node.selected { background: var(--accent-soft); }
+  .node .title { display: flex; align-items: center; gap: 8px; }
+  .node .id { font-family: var(--mono); font-weight: 600; font-size: 13px; padding: 2px 7px; border-radius: 6px; color: #fff; background: var(--nc); }
+  .node .name { font-weight: 600; }
+  .node .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; font-size: 12px; color: var(--ink-2); }
+  .node .meta span { display: flex; align-items: center; gap: 6px; }
+  .node .foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; }
+  .pill.good { background: var(--good-soft); color: var(--good); } .pill.warn { background: var(--warn-soft); color: #7a5300; }
+  .pill.crit { background: var(--crit-soft); color: var(--crit); } .pill.off { background: var(--surface-2); color: var(--muted); border: 1px solid var(--hair); }
+  :root[data-theme="dark"] .pill.warn { color: var(--warn); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pill.warn { color: var(--warn); } }
+  .bars { display: inline-flex; align-items: flex-end; gap: 2px; height: 12px; }
+  .bars i { width: 3px; background: var(--axis); border-radius: 1px; }
+  .bars i.on { background: var(--good); }
+  .bars i:nth-child(1) { height: 4px; } .bars i:nth-child(2) { height: 7px; } .bars i:nth-child(3) { height: 10px; } .bars i:nth-child(4) { height: 12px; }
+
+  /* ---------- workspace ---------- */
+  .work { display: grid; gap: 20px; min-width: 0; }
+  .work-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .work-head .title { display: flex; align-items: center; gap: 12px; }
+  .work-head h2 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+  .work-head .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .capture { display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: center; }
+  @media (max-width: 700px) { .capture { grid-template-columns: 1fr; } }
+  .field { display: grid; gap: 6px; }
+  .field label { font-size: 12px; color: var(--muted); font-weight: 500; }
+  .seg { display: inline-flex; border: 1px solid var(--hair); border-radius: 8px; overflow: hidden; }
+  .seg button { border: 0; background: var(--surface); color: var(--ink-2); padding: 7px 14px; border-right: 1px solid var(--hair); }
+  .seg button:last-child { border-right: 0; }
+  .seg button.on { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+  .controls { display: flex; gap: 16px; flex-wrap: wrap; align-items: end; }
+  .check { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-2); padding-bottom: 8px; }
+  .check input { accent-color: var(--accent); width: 16px; height: 16px; }
+
+  .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 16px; }
+  @media (max-width: 700px) { .steps { grid-template-columns: repeat(2, 1fr); } }
+  .step { padding: 10px 12px; border-radius: 8px; background: var(--surface-2); border: 1px solid var(--hair); display: grid; gap: 4px; }
+  .step .k { font-size: 11px; color: var(--muted); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; display: flex; justify-content: space-between; }
+  .step .v { font-size: 13px; }
+  .step.done .k::after { content: "done"; color: var(--good); }
+  .step .track { height: 4px; border-radius: 2px; background: var(--hair); overflow: hidden; }
+  .step .track i { display: block; height: 100%; width: 100%; background: var(--good); }
+  .saved { margin-top: 12px; font-size: 12px; color: var(--ink-2); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .saved code { font-family: var(--mono); background: var(--surface-2); border: 1px solid var(--hair); padding: 2px 6px; border-radius: 6px; color: var(--ink); }
+
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+  .tile { padding: 14px 14px 12px; background: var(--surface); border: 1px solid var(--hair); border-radius: var(--radius); display: grid; gap: 4px; align-content: start; }
+  .tile .k { font-size: 11px; color: var(--muted); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+  .tile .v { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; }
+  .tile .v small { font-size: 13px; font-weight: 500; color: var(--muted); margin-left: 3px; }
+  .tile .s { font-size: 12px; color: var(--ink-2); display: flex; align-items: center; gap: 6px; }
+  .tile.good { border-top: 3px solid var(--good); } .tile.warn { border-top: 3px solid var(--warn); }
+
+  .charts { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 980px) { .charts { grid-template-columns: 1fr; } }
+  .chart-card .panel-head .legend { display: flex; gap: 12px; font-size: 12px; color: var(--ink-2); align-items: center; }
+  .legend .sw { width: 14px; height: 3px; background: var(--series); border-radius: 2px; display: inline-block; margin-right: 6px; vertical-align: middle; }
+  .chart-wrap { position: relative; padding: 8px 12px 12px; }
+  .chart-wrap svg { width: 100%; height: auto; display: block; }
+  .chart-wrap canvas { width: 100%; height: auto; display: block; border-radius: 4px; }
+  .tip { position: absolute; pointer-events: none; background: var(--ink); color: var(--plane); font-family: var(--mono); font-size: 11px; padding: 6px 8px; border-radius: 6px; white-space: nowrap; transform: translate(-50%, -110%); opacity: 0; transition: opacity 0.1s; }
+  .tip.show { opacity: 1; }
+  .axis-text { font-family: var(--mono); font-size: 10px; fill: var(--muted); }
+  .grid-line { stroke: var(--grid); stroke-width: 1; }
+  .axis-line { stroke: var(--axis); stroke-width: 1; }
+  .spec-axes { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 10px; color: var(--muted); padding: 4px 12px 0; }
+  .heat-legend { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); }
+  .heat-legend .ramp { width: 90px; height: 8px; border-radius: 4px; background: linear-gradient(90deg, var(--heat0), var(--heat1), var(--heat2), var(--heat3), var(--heat4), var(--heat5)); border: 1px solid var(--hair); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); padding: 10px 12px; border-bottom: 1px solid var(--hair); white-space: nowrap; }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--hair); vertical-align: middle; }
+  tr:last-child td { border-bottom: 0; }
+  td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  tr.current td { background: var(--accent-soft); }
+  .table-wrap { overflow-x: auto; }
+  .link { color: var(--accent); font-weight: 500; text-decoration: none; }
+
+  .log { display: grid; gap: 0; }
+  .log .row { display: grid; grid-template-columns: 70px 64px 1fr; gap: 12px; padding: 8px 16px; border-bottom: 1px solid var(--hair); font-size: 13px; align-items: center; }
+  .log .row:last-child { border-bottom: 0; }
+  .log .t { font-family: var(--mono); color: var(--muted); font-size: 12px; }
+  .log .who { font-family: var(--mono); font-weight: 600; font-size: 12px; }
+  .footer { max-width: 1500px; margin: 24px auto 0; font-size: 12px; color: var(--muted); display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  @media (prefers-reduced-motion: reduce) { .tip { transition: none; } }
+</style>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M3 12h2l2-6 3 12 3-9 2 5 2-2h4"/></svg>
+    </div>
+    <div>
+      <h1>AcoustiScan</h1>
+      <div class="sub">Multi-microphone capture console</div>
+    </div>
+  </div>
+  <div class="spacer"></div>
+  <span class="chip"><span class="dot good"></span> Network <b>Yousef's S24 Ultra</b></span>
+  <span class="chip">Laptop <b class="mono">172.30.40.15</b></span>
+  <span class="chip"><span class="dot good"></span> <b>3</b> of 4 nodes online</span>
+  <span class="chip">Session <b class="mono">2026-09-22 14:35</b></span>
+</header>
+
+<main class="layout">
+  <!-- ================= node rail ================= -->
+  <aside class="rail">
+    <section class="panel">
+      <div class="rail-actions">
+        <select class="select" id="all-duration" aria-label="Duration for all nodes">
+          <option>10 s</option><option>1 s</option><option>5 s</option><option>30 s</option>
+        </select>
+        <button class="btn primary" id="capture-all" style="flex:1">Capture all online</button>
+      </div>
+
+      <div class="node" style="--nc: var(--node1)">
+        <div class="stripe"></div>
+        <div class="body">
+          <div class="title"><span class="id">ESP-1</span><span class="name">North corner</span></div>
+          <div class="meta">
+            <span class="mono">172.30.40.207</span>
+            <span><i class="bars"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></i> -48 dBm</span>
+            <span>Up 2 h 14 min</span>
+            <span>Mic <b style="color:var(--good)">alive</b></span>
+          </div>
+          <div class="foot">
+            <span class="pill good"><span class="dot good"></span> Online</span>
+            <span style="font-size:12px;color:var(--muted)">Last capture 14:32</span>
+            <button class="btn small">Capture</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="node selected" style="--nc: var(--node2)" aria-current="true">
+        <div class="stripe"></div>
+        <div class="body">
+          <div class="title"><span class="id">ESP-2</span><span class="name">East wall</span></div>
+          <div class="meta">
+            <span class="mono">172.30.40.212</span>
+            <span><i class="bars"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></i> -55 dBm</span>
+            <span>Up 2 h 13 min</span>
+            <span>Mic <b style="color:var(--good)">alive</b></span>
+          </div>
+          <div class="foot">
+            <span class="pill good"><span class="dot good"></span> Online</span>
+            <span style="font-size:12px;color:var(--muted)">Last capture 14:35</span>
+            <button class="btn small primary">Capture</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="node" style="--nc: var(--node3)">
+        <div class="stripe"></div>
+        <div class="body">
+          <div class="title"><span class="id">ESP-3</span><span class="name">South window</span></div>
+          <div class="meta">
+            <span class="mono">172.30.40.219</span>
+            <span><i class="bars"><i class="on"></i><i></i><i></i><i></i></i> -79 dBm</span>
+            <span>Up 41 min</span>
+            <span>Mic <b style="color:var(--good)">alive</b></span>
+          </div>
+          <div class="foot">
+            <span class="pill warn">&#9650; Weak signal</span>
+            <span style="font-size:12px;color:var(--muted)">Last capture 14:20</span>
+            <button class="btn small">Capture</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="node" style="--nc: var(--node4)">
+        <div class="stripe"></div>
+        <div class="body">
+          <div class="title"><span class="id">ESP-4</span><span class="name">West door</span></div>
+          <div class="meta">
+            <span class="mono">172.30.40.223</span>
+            <span><i class="bars"><i></i><i></i><i></i><i></i></i> no signal</span>
+            <span>Last seen 6 min ago</span>
+            <span>Mic <b style="color:var(--muted)">unknown</b></span>
+          </div>
+          <div class="foot">
+            <span class="pill off"><span class="dot off"></span> Offline</span>
+            <span style="font-size:12px;color:var(--muted)">Check power</span>
+            <button class="btn small" disabled>Capture</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><h2>Add a node</h2></div>
+      <div class="panel-body" style="font-size:13px;color:var(--ink-2);display:grid;gap:10px">
+        <div>Plug a new board into USB once. It receives its ID and the network name and password, stored in its flash. After that it only needs 5 V power.</div>
+        <button class="btn">Provision a board over USB</button>
+      </div>
+    </section>
+  </aside>
+
+  <!-- ================= workspace ================= -->
+  <section class="work">
+    <div class="work-head">
+      <div class="title">
+        <span class="id mono" style="background:var(--node2);color:#fff;font-weight:600;padding:4px 9px;border-radius:7px">ESP-2</span>
+        <h2>East wall</h2>
+      </div>
+      <div class="chips">
+        <span class="chip"><span class="dot good"></span> Online</span>
+        <span class="chip">Signal <b>-55 dBm</b> good</span>
+        <span class="chip"><span class="dot good"></span> Mic alive <b>50 % data</b></span>
+        <span class="chip">Clock <b>2.048 MHz</b> PDM</span>
+        <span class="chip">Firmware <b class="mono">0.3.1</b></span>
+      </div>
+    </div>
+
+    <!-- capture control -->
+    <section class="panel">
+      <div class="panel-head"><h2>Capture</h2><span class="eyebrow">16 kHz &middot; 16-bit &middot; mono</span></div>
+      <div class="panel-body">
+        <div class="capture">
+          <div class="controls">
+            <div class="field">
+              <label for="dur">Duration</label>
+              <div class="seg" id="dur" role="group" aria-label="Duration">
+                <button type="button">1 s</button><button type="button">5 s</button><button type="button" class="on">10 s</button><button type="button">30 s</button>
+              </div>
+            </div>
+            <div class="field">
+              <label for="label">Label</label>
+              <input id="label" class="select" value="Speech test, 40 cm" style="min-width:200px">
+            </div>
+            <label class="check"><input type="checkbox" id="also-all"> Also trigger the other online nodes</label>
+          </div>
+          <button class="btn primary" id="start" style="padding:12px 22px;font-size:15px">&#9679; Start capture</button>
+        </div>
+
+        <div class="steps">
+          <div class="step done"><div class="k">1 Record on node</div><div class="v">10.00 s, 160 000 samples</div><div class="track"><i></i></div></div>
+          <div class="step done"><div class="k">2 Transfer over Wi-Fi</div><div class="v">320 KB in 1.8 s, checksum OK</div><div class="track"><i></i></div></div>
+          <div class="step done"><div class="k">3 Analyze</div><div class="v">Statistics, spectrum, spectrogram</div><div class="track"><i></i></div></div>
+          <div class="step done"><div class="k">4 Save</div><div class="v">WAV + report stored</div><div class="track"><i></i></div></div>
+        </div>
+        <div class="saved">Saved as <code>captures/esp-2/2026-09-22_14-35-08.wav</code> <a class="link" href="#">Download WAV</a> <a class="link" href="#">Open folder</a></div>
+      </div>
+    </section>
+
+    <!-- statistics -->
+    <div>
+      <div class="eyebrow" style="margin-bottom:10px">Statistics of the last capture</div>
+      <div class="tiles">
+        <div class="tile"><div class="k">Peak level</div><div class="v">-22.4<small>dBFS</small></div><div class="s">2 482 of 32 768</div></div>
+        <div class="tile"><div class="k">RMS level</div><div class="v">-39.6<small>dBFS</small></div><div class="s">342 LSB</div></div>
+        <div class="tile"><div class="k">Noise floor</div><div class="v">-76.1<small>dBFS</small></div><div class="s">median bin, quiet room</div></div>
+        <div class="tile"><div class="k">Dominant frequency</div><div class="v">2 764.8<small>Hz</small></div><div class="s">stable &plusmn;0.5 Hz</div></div>
+        <div class="tile"><div class="k">Crest factor</div><div class="v">17.2<small>dB</small></div><div class="s">peak to RMS</div></div>
+        <div class="tile"><div class="k">DC offset</div><div class="v">+0.2<small>LSB</small></div><div class="s">removed before analysis</div></div>
+        <div class="tile good"><div class="k">Clipping</div><div class="v">0<small>samples</small></div><div class="s"><span class="dot good"></span> no overload</div></div>
+        <div class="tile good"><div class="k">Mic health</div><div class="v">Alive</div><div class="s"><span class="dot good"></span> data line 50 % high</div></div>
+      </div>
+    </div>
+
+    <!-- waveform -->
+    <section class="panel chart-card">
+      <div class="panel-head">
+        <h2>Waveform</h2>
+        <div class="legend"><span><span class="sw"></span>Amplitude, fraction of full scale</span><span>0 to 10 s</span></div>
+      </div>
+      <div class="chart-wrap" id="wave-wrap">
+        <svg id="wave" viewBox="0 0 1000 230" role="img" aria-label="Waveform of the last capture"></svg>
+        <div class="tip" id="wave-tip"></div>
+      </div>
+    </section>
+
+    <div class="charts">
+      <!-- spectrum -->
+      <section class="panel chart-card">
+        <div class="panel-head">
+          <h2>Spectrum</h2>
+          <div class="legend"><span><span class="sw"></span>Level, dBFS</span><span>4096-point FFT, averaged</span></div>
+        </div>
+        <div class="chart-wrap" id="spec-wrap">
+          <svg id="spec" viewBox="0 0 640 260" role="img" aria-label="Averaged spectrum of the last capture"></svg>
+          <div class="tip" id="spec-tip"></div>
+        </div>
+      </section>
+
+      <!-- spectrogram -->
+      <section class="panel chart-card">
+        <div class="panel-head">
+          <h2>Spectrogram</h2>
+          <div class="heat-legend">-90 dBFS <span class="ramp"></span> -20 dBFS</div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="sgram" width="640" height="220" aria-label="Spectrogram, time versus frequency"></canvas>
+          <div class="spec-axes"><span>0 s</span><span>2 s</span><span>4 s</span><span>6 s</span><span>8 s</span><span>10 s</span></div>
+          <div class="spec-axes" style="justify-content:flex-start;gap:12px"><span>Vertical: 0 to 8 kHz</span><span>Brighter = louder</span></div>
+        </div>
+      </section>
+    </div>
+
+    <!-- history -->
+    <section class="panel">
+      <div class="panel-head"><h2>Capture history &middot; ESP-2</h2><span class="eyebrow">Today</span></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Time</th><th>Label</th><th>Length</th><th>Peak</th><th>RMS</th><th>Dominant</th><th>Result</th><th></th></tr></thead>
+          <tbody>
+            <tr class="current"><td class="num">14:35:08</td><td>Speech test, 40 cm</td><td class="num">10.0 s</td><td class="num">-22.4 dBFS</td><td class="num">-39.6 dBFS</td><td class="num">2 764.8 Hz</td><td><span class="pill good">OK</span></td><td><a class="link" href="#">Open</a></td></tr>
+            <tr><td class="num">14:31:50</td><td>Phone tone 3 kHz</td><td class="num">10.0 s</td><td class="num">-0.1 dBFS</td><td class="num">-26.9 dBFS</td><td class="num">2 764.8 Hz</td><td><span class="pill warn">&#9650; Clipped 1 163</span></td><td><a class="link" href="#">Open</a></td></tr>
+            <tr><td class="num">14:28:11</td><td>Room noise</td><td class="num">10.0 s</td><td class="num">-30.3 dBFS</td><td class="num">-52.7 dBFS</td><td class="num">128.9 Hz</td><td><span class="pill good">OK</span></td><td><a class="link" href="#">Open</a></td></tr>
+            <tr><td class="num">14:20:02</td><td>Clap check</td><td class="num">1.0 s</td><td class="num">0.0 dBFS</td><td class="num">-19.4 dBFS</td><td class="num">412.5 Hz</td><td><span class="pill warn">&#9650; Clipped 174</span></td><td><a class="link" href="#">Open</a></td></tr>
+            <tr><td class="num">14:12:45</td><td>First try</td><td class="num">10.0 s</td><td class="num">-0.5 dBFS</td><td class="num">-0.5 dBFS</td><td class="num">&mdash;</td><td><span class="pill crit">&#10006; Mic flat</span></td><td><a class="link" href="#">Open</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- activity -->
+    <section class="panel">
+      <div class="panel-head"><h2>Activity</h2><span class="eyebrow">All nodes</span></div>
+      <div class="log">
+        <div class="row"><span class="t">14:35:10</span><span class="who" style="color:var(--node2)">ESP-2</span><span>Capture complete, 320 044 bytes, checksum OK, analysis 0.4 s</span></div>
+        <div class="row"><span class="t">14:34:58</span><span class="who" style="color:var(--node2)">ESP-2</span><span>Capture started, 10 s</span></div>
+        <div class="row"><span class="t">14:33:20</span><span class="who" style="color:var(--node4)">ESP-4</span><span><span class="pill off">Offline</span> No heartbeat for 60 s. Check its power supply.</span></div>
+        <div class="row"><span class="t">14:31:52</span><span class="who" style="color:var(--node2)">ESP-2</span><span><span class="pill warn">&#9650; Warning</span> 1 163 clipped samples. Source too loud or too close.</span></div>
+        <div class="row"><span class="t">14:29:00</span><span class="who" style="color:var(--node3)">ESP-3</span><span><span class="pill warn">&#9650; Warning</span> Signal dropped to -79 dBm. Move it closer to the phone or the router.</span></div>
+        <div class="row"><span class="t">14:12:50</span><span class="who" style="color:var(--node2)">ESP-2</span><span><span class="pill crit">&#10006; Mic flat</span> Data line never toggled. Microphone replaced afterwards.</span></div>
+        <div class="row"><span class="t">14:10:12</span><span class="who" style="color:var(--node1)">ESP-1</span><span>Provisioned over USB: ID, network name and password saved to flash</span></div>
+      </div>
+    </section>
+  </section>
+</main>
+
+<div class="footer">
+  <span>Design mockup with example numbers taken from today's bench tests. Nothing here is live yet.</span>
+  <span>AcoustiScan &middot; 4 nodes now, 8 planned</span>
+</div>
+
+<script>
+(function () {
+  // ---------- deterministic example data ----------
+  function rng(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  var rnd = rng(42);
+  var css = getComputedStyle(document.documentElement);
+  function tok(n) { return css.getPropertyValue(n).trim(); }
+  var NS = 'http://www.w3.org/2000/svg';
+  function el(tag, attrs, parent) { var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+
+  // Speech envelope: bursts at 3.0-4.2 s, 5.1-5.6 s, 6.4-7.9 s; steady tone from 2 s; quiet floor elsewhere.
+  function envelope(t) {
+    var e = 0.006;
+    if (t > 2.0) e += 0.079;                                   // 2 764.8 Hz tone at -22 dBFS
+    var bursts = [[3.0, 4.2, 0.55], [5.1, 5.6, 0.35], [6.4, 7.9, 0.62]];
+    for (var i = 0; i < bursts.length; i++) {
+      var b = bursts[i];
+      if (t >= b[0] && t <= b[1]) {
+        var p = (t - b[0]) / (b[1] - b[0]);
+        e += b[2] * Math.sin(Math.PI * p) * (0.55 + 0.45 * Math.abs(Math.sin(t * 27)));
+      }
+    }
+    return Math.min(e, 0.95);
+  }
+
+  // ---------- waveform ----------
+  (function () {
+    var svg = document.getElementById('wave');
+    var W = 1000, H = 230, L = 46, R = 12, T = 12, B = 30;
+    var pw = W - L - R, ph = H - T - B, cy = T + ph / 2;
+    var g = el('g', {}, svg);
+    for (var s = 0; s <= 10; s++) {
+      var x = L + s / 10 * pw;
+      el('line', { x1: x, y1: T, x2: x, y2: T + ph, 'class': 'grid-line' }, g);
+      el('text', { x: x, y: H - 10, 'class': 'axis-text', 'text-anchor': 'middle' }, g).textContent = s + ' s';
+    }
+    [[1, '1.0'], [0.5, '0.5'], [0, '0'], [-0.5, '-0.5'], [-1, '-1.0']].forEach(function (p) {
+      var y = cy - p[0] * ph / 2;
+      el('line', { x1: L, y1: y, x2: L + pw, y2: y, 'class': p[0] === 0 ? 'axis-line' : 'grid-line' }, g);
+      el('text', { x: L - 6, y: y + 3, 'class': 'axis-text', 'text-anchor': 'end' }, g).textContent = p[1];
+    });
+    var cols = 500, d = '';
+    var tops = [], bots = [];
+    for (var i = 0; i < cols; i++) {
+      var t = i / cols * 10, e = envelope(t);
+      var hi = e * (0.55 + 0.45 * rnd()), lo = -e * (0.55 + 0.45 * rnd());
+      tops.push(hi); bots.push(lo);
+    }
+    for (i = 0; i < cols; i++) d += (i ? 'L' : 'M') + (L + i / cols * pw).toFixed(1) + ',' + (cy - tops[i] * ph / 2).toFixed(1);
+    for (i = cols - 1; i >= 0; i--) d += 'L' + (L + i / cols * pw).toFixed(1) + ',' + (cy - bots[i] * ph / 2).toFixed(1);
+    el('path', { d: d + 'Z', fill: tok('--series'), 'fill-opacity': '0.85', stroke: tok('--series'), 'stroke-width': '1' }, g);
+    // hover crosshair
+    var cross = el('line', { x1: 0, y1: T, x2: 0, y2: T + ph, stroke: tok('--ink'), 'stroke-width': '1', 'stroke-dasharray': '3 3', opacity: 0 }, g);
+    var wrap = document.getElementById('wave-wrap'), tip = document.getElementById('wave-tip');
+    wrap.addEventListener('mousemove', function (ev) {
+      var r = svg.getBoundingClientRect(), fx = (ev.clientX - r.left) / r.width * W;
+      if (fx < L || fx > L + pw) { cross.setAttribute('opacity', 0); tip.classList.remove('show'); return; }
+      var t = (fx - L) / pw * 10, i = Math.min(cols - 1, Math.floor((fx - L) / pw * cols));
+      cross.setAttribute('x1', fx); cross.setAttribute('x2', fx); cross.setAttribute('opacity', 1);
+      tip.textContent = t.toFixed(2) + ' s   peak ' + (20 * Math.log10(Math.max(tops[i], 1e-4))).toFixed(1) + ' dBFS';
+      tip.style.left = (ev.clientX - r.left) + 'px'; tip.style.top = (r.top - wrap.getBoundingClientRect().top + 24) + 'px';
+      tip.classList.add('show');
+    });
+    wrap.addEventListener('mouseleave', function () { cross.setAttribute('opacity', 0); tip.classList.remove('show'); });
+  })();
+
+  // ---------- spectrum ----------
+  function levelAt(f) {
+    var v = -78 + 14 * Math.exp(-f / 600) + 10 * Math.exp(-Math.pow((f - 350) / 420, 2));
+    v += 56 / (1 + Math.pow((f - 2764.8) / 9, 2));     // fundamental, peaks near -22
+    v += 29 / (1 + Math.pow((f - 5529.6) / 9, 2));     // 2nd harmonic near -49
+    v += 22 / (1 + Math.pow((f - 7705.6) / 9, 2));     // 3rd harmonic, folded back
+    return v;
+  }
+  (function () {
+    var svg = document.getElementById('spec');
+    var W = 640, H = 260, L = 44, R = 14, T = 12, B = 30;
+    var pw = W - L - R, ph = H - T - B;
+    var g = el('g', {}, svg);
+    function xf(f) { return L + f / 8000 * pw; }
+    function yd(d) { return T + (0 - Math.max(-100, Math.min(0, d))) / 100 * ph; }
+    for (var f = 0; f <= 8000; f += 1000) {
+      el('line', { x1: xf(f), y1: T, x2: xf(f), y2: T + ph, 'class': 'grid-line' }, g);
+      el('text', { x: xf(f), y: H - 10, 'class': 'axis-text', 'text-anchor': 'middle' }, g).textContent = f ? (f / 1000) + 'k' : '0 Hz';
+    }
+    for (var d = 0; d >= -100; d -= 20) {
+      el('line', { x1: L, y1: yd(d), x2: L + pw, y2: yd(d), 'class': d === -100 ? 'axis-line' : 'grid-line' }, g);
+      el('text', { x: L - 6, y: yd(d) + 3, 'class': 'axis-text', 'text-anchor': 'end' }, g).textContent = d;
+    }
+    var pts = [], path = '', area = 'M' + L + ',' + (T + ph);
+    for (var i = 0; i <= 800; i++) {
+      var fr = i * 10, lv = levelAt(fr) + (rnd() - 0.5) * 3;
+      pts.push([fr, lv]);
+      var x = xf(fr).toFixed(1), y = yd(lv).toFixed(1);
+      path += (i ? 'L' : 'M') + x + ',' + y; area += 'L' + x + ',' + y;
+    }
+    area += 'L' + (L + pw) + ',' + (T + ph) + 'Z';
+    el('path', { d: area, fill: tok('--series-fill') }, g);
+    el('path', { d: path, fill: 'none', stroke: tok('--series'), 'stroke-width': '1.6', 'stroke-linejoin': 'round' }, g);
+    // direct label on the peak
+    var px = xf(2764.8), py = yd(-22);
+    el('circle', { cx: px, cy: py, r: 4.5, fill: tok('--series'), stroke: tok('--surface'), 'stroke-width': '2' }, g);
+    el('text', { x: px + 10, y: py - 6, 'class': 'axis-text', fill: tok('--ink'), 'font-size': '11', 'font-weight': '600' }, g).textContent = '2 764.8 Hz, -22.0 dBFS';
+    var cross = el('line', { x1: 0, y1: T, x2: 0, y2: T + ph, stroke: tok('--ink'), 'stroke-width': '1', 'stroke-dasharray': '3 3', opacity: 0 }, g);
+    var wrap = document.getElementById('spec-wrap'), tip = document.getElementById('spec-tip');
+    wrap.addEventListener('mousemove', function (ev) {
+      var r = svg.getBoundingClientRect(), fx = (ev.clientX - r.left) / r.width * W;
+      if (fx < L || fx > L + pw) { cross.setAttribute('opacity', 0); tip.classList.remove('show'); return; }
+      var i = Math.min(800, Math.round((fx - L) / pw * 800));
+      cross.setAttribute('x1', fx); cross.setAttribute('x2', fx); cross.setAttribute('opacity', 1);
+      tip.textContent = pts[i][0] + ' Hz   ' + pts[i][1].toFixed(1) + ' dBFS';
+      tip.style.left = (ev.clientX - r.left) + 'px'; tip.style.top = (r.top - wrap.getBoundingClientRect().top + 24) + 'px';
+      tip.classList.add('show');
+    });
+    wrap.addEventListener('mouseleave', function () { cross.setAttribute('opacity', 0); tip.classList.remove('show'); });
+  })();
+
+  // ---------- spectrogram (canvas, sequential ramp) ----------
+  (function () {
+    var c = document.getElementById('sgram'), ctx = c.getContext('2d');
+    var W = c.width, H = c.height, cols = 200, bins = 110;
+    var ramp = ['--heat0', '--heat1', '--heat2', '--heat3', '--heat4', '--heat5'].map(function (n) {
+      var v = tok(n); if (v.charAt(0) === '#' && v.length === 7) return [parseInt(v.substr(1, 2), 16), parseInt(v.substr(3, 2), 16), parseInt(v.substr(5, 2), 16)];
+      return [24, 27, 33];
+    });
+    function color(u) { u = Math.max(0, Math.min(0.999, u)) * (ramp.length - 1); var i = Math.floor(u), f = u - i, a = ramp[i], b = ramp[i + 1]; return 'rgb(' + Math.round(a[0] + (b[0] - a[0]) * f) + ',' + Math.round(a[1] + (b[1] - a[1]) * f) + ',' + Math.round(a[2] + (b[2] - a[2]) * f) + ')'; }
+    var cw = W / cols, bh = H / bins;
+    for (var ci = 0; ci < cols; ci++) {
+      var t = ci / cols * 10, e = envelope(t) - (t > 2 ? 0.079 : 0);
+      for (var k = 0; k < bins; k++) {
+        var f = (k + 0.5) / bins * 8000;
+        var lv = -84 + 10 * Math.exp(-f / 700) + (rnd() - 0.5) * 6;
+        if (t > 2.0) { lv += 62 / (1 + Math.pow((f - 2764.8) / 60, 2)); lv += 34 / (1 + Math.pow((f - 5529.6) / 60, 2)); lv += 26 / (1 + Math.pow((f - 7705.6) / 60, 2)); }
+        if (e > 0.02) {                                  // voiced speech: harmonic stack of a 130 Hz pitch
+          var pitch = 130 + 25 * Math.sin(t * 5), h = Math.round(f / pitch), dist = Math.abs(f - h * pitch);
+          lv += (30 + 30 * e) * Math.exp(-f / 2500) * Math.exp(-Math.pow(dist / 28, 2)) + 12 * e * Math.exp(-f / 3000);
+        }
+        ctx.fillStyle = color((lv + 90) / 70);
+        ctx.fillRect(ci * cw, H - (k + 1) * bh, cw + 0.6, bh + 0.6);
+      }
+    }
+  })();
+})();
+</script>
