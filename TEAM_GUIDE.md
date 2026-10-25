@@ -39,15 +39,16 @@ as reference.
 
 ## 2. Status and what is next
 
-Last recorded state: 22 to 23 September 2026. Update this table as you work.
+ESP-1 status updated: 25 October 2026; other entries retain prior recorded status.
+See [ESP-1 Hardware Test Report](ESP1_HARDWARE_TEST_REPORT.md) for verified measurements and limitations.
 
 | Item | State |
 |---|---|
 | Board joins the phone hotspot | Done |
 | PDM microphone smoke test (16 kHz) | Done, passed after swapping one dead mic |
 | Node firmware, provisioning tool, dashboard | Built. Firmware compiles (rebuilt cleanly on 14 Oct 2026); dashboard verified end to end with simulated nodes (`tools/fake_node.py`) |
-| First real board through the dashboard | **Not recorded yet. Setting up ESP-1 (section 7) is that test** |
-| Hotspot network check (UDP broadcast, Windows firewall) | Not recorded yet, part of the ESP-1 test |
+| First real board through the dashboard | ESP-1 passed: discovered online, microphone alive, real capture OK; repeat clap test had zero clipped samples |
+| Network discovery check | ESP-1 automatically discovered over Wi-Fi on the tested router network; no firewall settings changed. Hotspot-specific validation remains unrecorded |
 | 1 hour soak test of one node | Not done |
 
 Roadmap, in order: 4 real nodes online, capture from several nodes at once, time sync
@@ -59,7 +60,7 @@ Node register (fill in as you go):
 
 | Board | ID | Name | Mic wired | Flashed + provisioned | Seen in dashboard | Sticker on board |
 |---|---|---|---|---|---|---|
-| 1 | `ESP-1` | Node 1 | [ ] | [ ] | [ ] | [ ] |
+| 1 | `ESP-1` | Node 1 | [x] | [x] | [x] | [ ] |
 | 2 | `ESP-2` | Node 2 | [ ] | [ ] | [ ] | [ ] |
 | 3 | `ESP-3` | Node 3 | [ ] | [ ] | [ ] | [ ] |
 | 4 | `ESP-4` | Node 4 | [ ] | [ ] | [ ] | [ ] |
