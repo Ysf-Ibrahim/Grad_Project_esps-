@@ -39,9 +39,10 @@ as reference.
 
 ## 2. Status and what is next
 
-ESP-1 and ESP-2 status updated: 25 October 2026; other entries retain prior recorded status.
+ESP-1 and ESP-2 status updated: 25 October 2026. ESP-3 and three-node testing updated: 26 October 2026; other entries retain prior recorded status.
 See [ESP-1 Hardware Test Report](ESP1_HARDWARE_TEST_REPORT.md) for verified measurements and limitations.
 See [ESP-2 Hardware Test Report](ESP2_HARDWARE_TEST_REPORT.md) for ESP-2 measurements and the two-node sequential recording test.
+See [ESP-3 Hardware Test Report](ESP3_HARDWARE_TEST_REPORT.md) for ESP-3 measurements, limitations and the three-node sequential recording test.
 
 | Item | State |
 |---|---|
@@ -50,7 +51,9 @@ See [ESP-2 Hardware Test Report](ESP2_HARDWARE_TEST_REPORT.md) for ESP-2 measure
 | Node firmware, provisioning tool, dashboard | Built. Firmware compiles (rebuilt cleanly on 14 Oct 2026); dashboard verified end to end with simulated nodes (`tools/fake_node.py`) |
 | First real board through the dashboard | ESP-1 passed: discovered online, microphone alive, real capture OK; repeat clap test had zero clipped samples |
 | Second real board through the dashboard | ESP-2 passed: flashed and provisioned, online, microphone alive; initial, quiet and clap recordings OK with zero clipped samples |
+| Third real board through the dashboard | ESP-3 passed: wiring functionally verified, flashed and provisioned, automatically discovered online, microphone alive; initial, quiet and clap recordings OK with zero clipped samples |
 | Two-node connectivity and sequential recording | ESP-1 and ESP-2 simultaneously online with unique IDs and different addresses; both microphones alive; separate sequential one-second captures OK with zero clipped samples. Simultaneous recording not tested |
+| Three-node connectivity and sequential recording | ESP-1, ESP-2 and ESP-3 simultaneously online with unique IDs, different addresses and fresh heartbeats; all microphones alive; sequential one-second captures in that order OK with zero clipped samples. All three remained online at the final check. Simultaneous recording, clock synchronization and localization not tested |
 | Network discovery check | ESP-1 automatically discovered over Wi-Fi on the tested router network; no firewall settings changed. Hotspot-specific validation remains unrecorded |
 | 1 hour soak test of one node | Not done |
 
@@ -65,7 +68,7 @@ Node register (fill in as you go):
 |---|---|---|---|---|---|---|
 | 1 | `ESP-1` | Node 1 | [x] | [x] | [x] | [ ] |
 | 2 | `ESP-2` | Node 2 | [x] | [x] | [x] | [ ] |
-| 3 | `ESP-3` | Node 3 | [ ] | [ ] | [ ] | [ ] |
+| 3 | `ESP-3` | Node 3 | [x] | [x] | [x] | [ ] |
 | 4 | `ESP-4` | Node 4 | [ ] | [ ] | [ ] | [ ] |
 
 IDs must be **unique**. Two boards with the same ID overwrite each other in the dashboard.
