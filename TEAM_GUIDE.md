@@ -44,6 +44,7 @@ See [ESP-1 Hardware Test Report](ESP1_HARDWARE_TEST_REPORT.md) for verified meas
 See [ESP-2 Hardware Test Report](ESP2_HARDWARE_TEST_REPORT.md) for ESP-2 measurements and the two-node sequential recording test.
 See [ESP-3 Hardware Test Report](ESP3_HARDWARE_TEST_REPORT.md) for ESP-3 measurements, limitations and the three-node sequential recording test.
 See [ESP-4 Hardware Test Report](ESP4_HARDWARE_TEST_REPORT.md) for ESP-4 measurements, limitations and the four-node sequential recording test.
+See [ESP-4 Stability Test Report](ESP4_STABILITY_TEST_REPORT.md) for the single-node stability test completed on 26 October 2026 and its monitoring limitations.
 
 | Item | State |
 |---|---|
@@ -58,7 +59,8 @@ See [ESP-4 Hardware Test Report](ESP4_HARDWARE_TEST_REPORT.md) for ESP-4 measure
 | Three-node connectivity and sequential recording | ESP-1, ESP-2 and ESP-3 simultaneously online with unique IDs, different addresses and fresh heartbeats; all microphones alive; sequential one-second captures in that order OK with zero clipped samples. All three remained online at the final check. Simultaneous recording, clock synchronization and localization not tested |
 | Four-node connectivity and sequential recording | ESP-1, ESP-2, ESP-3 and ESP-4 simultaneously online on the same Wi-Fi network with unique IDs, distinct hardware addresses, different IP addresses and fresh heartbeats; all microphones alive; sequential one-second captures in that order OK with zero clipped samples. All four remained online with fresh heartbeats and returned to idle at the final check. Simultaneous recording, synchronization, localization and leak detection not validated |
 | Network discovery check | ESP-1 automatically discovered over Wi-Fi on the tested router network; no firewall settings changed. Hotspot-specific validation remains unrecorded |
-| 1 hour soak test of one node | Not done |
+| 1 hour soak test of one node | ESP-4 passed a 91-minute 46.559-second monitored single-node stability test with zero observed API errors, offline observations, stale-heartbeat events, microphone failures or possible unexpected restarts. Both endpoint recordings passed integrity checks. PASS within the limits of the monitoring evidence; see the stability report |
+| Multi-node stability | Pending. The ESP-4 stability result covers one node only; synchronization, localization and leak-detection validation remain pending |
 
 Four real nodes online and sequential recording: completed. Next, in order: capture from several nodes at once, time sync
 between nodes, localization, evaluate a dedicated deployment router/network (current tests used home Wi-Fi), 8 nodes.
