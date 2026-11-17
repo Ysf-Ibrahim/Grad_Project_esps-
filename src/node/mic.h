@@ -3,7 +3,7 @@
 // Lifted from src/mic_test.cpp. Wiring: CLK -> GPIO4, DATA -> GPIO5, SEL -> GND.
 #include <Arduino.h>
 
-constexpr uint32_t kMicSampleRate = 16000;
+constexpr uint32_t kMicSampleRate = 48000;
 constexpr uint32_t kMicMaxSeconds = 30;
 
 struct MicStats {
@@ -40,7 +40,7 @@ struct MicCapture {
   uint32_t crc32         = 0;     // over the mono bytes
 };
 
-// Called from inside the capture loop every DMA chunk (~32 ms). Return false to abort.
+// Called from inside the capture loop every DMA chunk (~10.7 ms). Return false to abort.
 typedef bool (*MicProgressFn)(uint32_t elapsedMs, uint32_t totalMs, void* ctx);
 
 bool        micInit();                    // routing discovery + buffer allocation; call before Wi-Fi

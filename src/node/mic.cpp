@@ -23,7 +23,7 @@ constexpr size_t kDmaBufCount = 8;
 constexpr size_t kDmaBufFrames = 512;  // 2048 bytes per DMA buffer
 constexpr size_t kChunkBytes  = kDmaBufFrames * kSlots * sizeof(int16_t);
 constexpr uint32_t kDiscardMs = 300;
-constexpr size_t kMonoBytesMax = kMicSampleRate * kMicMaxSeconds * sizeof(int16_t);   // 960000
+constexpr size_t kMonoBytesMax = kMicSampleRate * kMicMaxSeconds * sizeof(int16_t);   // 2880000
 
 int16_t* g_mono = nullptr;             // PSRAM, allocated once
 uint8_t  g_scratch[kChunkBytes];       // internal RAM for DMA chunk reads
@@ -89,14 +89,10 @@ bool installRouting(const ClockRouting& r) {
   // Weak pull-down on DATA: an unpowered / disconnected mic decodes to a constant.
   gpio_set_pull_mode(static_cast<gpio_num_t>(kPinPdmData), GPIO_PULLDOWN_ONLY);
 
-  err = i2s_set_pdm_rx_down_sample(I2S_NUM_0, I2S_PDM_DSR_16S);   // PDM clock = fs * 128
-  if (err == ESP_OK) {
-    g_pdmClockHz = kMicSampleRate * 128;
-  } else {
-    err = i2s_set_pdm_rx_down_sample(I2S_NUM_0, I2S_PDM_DSR_8S);
-    if (err != ESP_OK) { snprintf(g_fail, sizeof(g_fail), "i2s_set_pdm_rx_down_sample %s", esp_err_to_name(err)); i2s_driver_uninstall(I2S_NUM_0); return false; }
-    g_pdmClockHz = kMicSampleRate * 64;
-  }
+  // 48 kHz * 64 = 3.072 MHz. The 128x mode would exceed the mic's 4.8 MHz limit.
+  err = i2s_set_pdm_rx_down_sample(I2S_NUM_0, I2S_PDM_DSR_8S);
+  if (err != ESP_OK) { snprintf(g_fail, sizeof(g_fail), "i2s_set_pdm_rx_down_sample %s", esp_err_to_name(err)); i2s_driver_uninstall(I2S_NUM_0); return false; }
+  g_pdmClockHz = kMicSampleRate * 64;
   enableInputReadback(kPinPdmClk);
   return true;
 }

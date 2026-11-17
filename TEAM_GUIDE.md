@@ -31,7 +31,7 @@ as reference.
 - A **node** is one ESP32-S3-WROOM-1 N16R8 board with one Knowles SPH0641LU4H-1 PDM
   microphone.
 - Each node joins the Wi-Fi, announces itself to the laptop (UDP 5005), records when the
-  laptop asks (TCP 5010) and sends the audio back (16 kHz, 16-bit, mono).
+  laptop asks (TCP 5010) and sends the audio back (48 kHz, 16-bit, mono).
 - The **dashboard** is a local web page on the laptop. "Connect to the web" in this
   project means "appear in that page". The nodes do **not** need internet.
 - A node is set up **once over USB** (firmware, ID, Wi-Fi name and password stored in its
@@ -64,8 +64,9 @@ See [ESP-4 Stability Test Report](ESP4_STABILITY_TEST_REPORT.md) for the single-
 
 Four real nodes online and sequential recording: completed. Next, in order: capture from several nodes at once, time sync
 between nodes, localization, evaluate a dedicated deployment router/network (current tests used home Wi-Fi), 8 nodes.
-The final system is meant to go to higher-rate (ultrasonic) PDM capture later; today's
-capture is deliberately 16 kHz.
+The node firmware now captures at 48 kHz with a 3.072 MHz PDM clock. Rebuild and
+flash each node to apply this setting. The hardware results above were recorded at
+16 kHz; hardware validation at 48 kHz is pending.
 
 Node register (fill in as you go):
 
@@ -536,7 +537,7 @@ then the table from step 8. Then ask me to confirm the board's LED is green.
 5. The result shows statistics, waveform, spectrum and spectrogram. The history table lists
    earlier captures of that node.
 
-Recordings go to `captures\<node ID>\<date_time>.wav` (16 kHz, 16-bit, mono) with a `.json`
+Recordings go to `captures\<node ID>\<date_time>.wav` (48 kHz, 16-bit, mono) with a `.json`
 file next to each one holding the label and the numbers. Any audio editor can open the WAV.
 
 No board at hand? `& $py tools\fake_node.py --id FAKE-1 --port 5011` simulates a node.

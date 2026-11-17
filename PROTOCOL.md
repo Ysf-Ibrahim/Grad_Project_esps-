@@ -63,15 +63,15 @@ The client sends one text line. A second client while one is served gets
 Capture framing, all text lines `\n` terminated:
 
 ```
-OK id=ESP-1 samples=160000 rate=16000 bytes=320000
+OK id=ESP-1 samples=480000 rate=48000 bytes=960000
 PROG 500 10000            (every 500 ms while recording: elapsed ms, total ms)
 PROG 1000 10000
 …
 STAT capture_ms=10016     (statistics computed on the node, key=value, ~20 lines)
 STAT min=-2431
 …
-DATA 320000               (byte count, then exactly that many raw bytes:
-<raw int16 little-endian mono PCM>   16 kHz, mic slot only)
+DATA 960000               (byte count, then exactly that many raw bytes:
+<raw int16 little-endian mono PCM>   48 kHz, mic slot only)
 END crc32=9eff007b        (CRC32 of the raw bytes, same as Python zlib.crc32)
 ```
 
@@ -80,6 +80,6 @@ aborts and returns to idle if the client disconnects at any point.
 
 ## 4. Storage on the laptop
 
-`captures/<node_id>/<YYYY-MM-DD_HH-MM-SS>.wav` (16 kHz, mono, 16-bit) and a `.json`
+`captures/<node_id>/<YYYY-MM-DD_HH-MM-SS>.wav` (48 kHz, mono, 16-bit) and a `.json`
 sidecar with the label, node snapshot, node statistics and the laptop analysis.
 Capture id = `<node_id>/<YYYY-MM-DD_HH-MM-SS>`.

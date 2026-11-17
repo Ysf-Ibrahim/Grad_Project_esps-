@@ -257,6 +257,7 @@
   }
 
   function drawSpectrogram(sg) {
+    $('sgram-range').textContent = '0 to ' + (sg.fmax / 1000) + ' kHz, darker = louder';
     var c = $('sgram'), ctx = c.getContext('2d');
     var cols = sg.cols, rows = sg.rows;
     c.width = 640; c.height = 256;

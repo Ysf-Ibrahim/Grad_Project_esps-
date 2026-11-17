@@ -49,8 +49,8 @@
           <legend>Duration</legend>
           <label><input type="radio" name="dur" value="1"> 1 s</label>
           <label><input type="radio" name="dur" value="5"> 5 s</label>
-          <label><input type="radio" name="dur" value="10" checked> 10 s</label>
-          <label><input type="radio" name="dur" value="30"> 30 s</label>
+          <label><input type="radio" name="dur" value="10"> 10 s</label>
+          <label><input type="radio" name="dur" value="30" checked> 30 s</label>
         </fieldset>
         <div class="field">
           <label for="label">Label (optional)</label>
@@ -60,7 +60,7 @@
       </div>
       <div class="progress">
         <div class="bar"><div id="bar-fill"></div></div>
-        <div id="progress-text" class="muted">Ready</div>
+        <div id="progress-text" class="muted">Ready — 48 kHz, 16-bit mono</div>
       </div>
     </section>
 
@@ -88,7 +88,7 @@
           </div>
         </section>
         <section class="box chart-box">
-          <div class="box-head"><h2>Spectrogram</h2><span class="muted">0 to 8 kHz, darker = louder</span></div>
+          <div class="box-head"><h2>Spectrogram</h2><span class="muted" id="sgram-range">Darker = louder</span></div>
           <div class="chart-wrap">
             <canvas id="sgram" width="640" height="256" aria-label="Spectrogram"></canvas>
             <div class="axis-row" id="sgram-axis"></div>

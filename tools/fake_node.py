@@ -21,7 +21,7 @@ import threading
 import time
 import zlib
 
-RATE = 16000
+RATE = 48000
 
 
 def synth(seconds, flat=False, seed=1):
@@ -52,7 +52,7 @@ def stats_of(samples):
     rms = math.sqrt(sum(s * s for s in samples) / n)
     var = max(sum((s - mean) ** 2 for s in samples) / n, 0.0)
     return {
-        "samples": n, "sample_rate": RATE, "pdm_clock_hz": 2048000, "min": mn, "max": mx,
+        "samples": n, "sample_rate": RATE, "pdm_clock_hz": RATE * 64, "min": mn, "max": mx,
         "mean": f"{mean:.1f}", "peak": max(abs(mn), abs(mx)),
         "peak_ac": int(max(abs(mx - mean), abs(mn - mean))), "rms": f"{rms:.1f}",
         "rms_ac": f"{math.sqrt(var):.1f}", "distinct": len(set(samples)),

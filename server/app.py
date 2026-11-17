@@ -5,6 +5,7 @@
 """
 import argparse
 import os
+import re
 import socket
 import sys
 import threading
@@ -63,7 +64,9 @@ def _run_job(job_id, node, seconds, label):
                          message=f"Transferring {done // 1024} / {total // 1024} KB")
 
         t0 = time.time()
-        pcm, node_stats, meta = node_client.capture(node["ip"], node["port"], seconds, progress)
+        pcm, node_stats, meta = node_client.capture(node["ip"], node["port"], seconds, progress, expected_rate=48000)
+        if int(node_stats.get("pdm_clock_hz", 0)) != 3072000:
+            raise node_client.NodeError("Node must use a 3.072 MHz PDM clock. Upload the new node firmware.")
         t_transfer = time.time() - t0
         _set_job(job_id, phase="analyzing", percent=100, message="Analyzing")
         stats = analysis.summary(pcm, meta["rate"], node_stats)
@@ -130,7 +133,7 @@ def api_capture():
     body = request.get_json(silent=True) or {}
     node_id = body.get("node_id")
     try:
-        seconds = int(body.get("seconds", 10))
+        seconds = int(body.get("seconds", 30))
     except (TypeError, ValueError):
         return jsonify({"error": "seconds must be a number"}), 400
     if seconds not in (1, 5, 10, 30):
@@ -175,8 +178,20 @@ def api_capture_wav(capture_id):
         return jsonify({"error": "bad id"}), 400
     if not os.path.exists(path):
         return jsonify({"error": "not found"}), 404
+    try:
+        label = str(storage.load_sidecar(capture_id).get("label") or "").strip()
+    except (OSError, ValueError):
+        label = ""
+    # Keep readable labels (including Unicode), replacing invalid filename characters.
+    name = re.sub(r'[<>:"/\\|?*\x00-\x1f\x7f]', "_", label).strip(" .")
+    if name.lower().endswith(".wav"):
+        name = name[:-4].rstrip(" .")
+    if not name:
+        name = capture_id.replace("/", "_")
+    if re.match(r"^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.|$)", name, re.I):
+        name = "_" + name
     return send_file(path, mimetype="audio/wav", as_attachment=True,
-                     download_name=capture_id.replace("/", "_") + ".wav")
+                     download_name=name + ".wav")
 
 
 @app.get("/api/captures/<path:capture_id>")

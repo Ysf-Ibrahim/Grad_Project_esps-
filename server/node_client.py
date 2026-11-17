@@ -53,7 +53,7 @@ def probe(ip, port=5010, timeout=5.0):
     return _fields(payload)
 
 
-def capture(ip, port, seconds, progress=None):
+def capture(ip, port, seconds, progress=None, expected_rate=None):
     """Run CAPTURE <seconds>. Returns (pcm_bytes, node_stats, meta).
 
     progress(phase, done, total) is called with phase 'recording' (ms) and
@@ -70,7 +70,11 @@ def capture(ip, port, seconds, progress=None):
         head = _fields(_expect_ok(_readline(f, "capture acknowledgement")))
         samples = int(head.get("samples", 0))
         rate = int(head.get("rate", 16000))
+        if expected_rate is not None and rate != expected_rate:
+            raise NodeError(f"Node uses {rate} Hz; {expected_rate} Hz required. Upload the new node firmware.")
         expected_bytes = int(head.get("bytes", samples * 2))
+        if samples != seconds * rate or expected_bytes != samples * 2:
+            raise NodeError("Node capture format does not match the requested duration and 16-bit mono audio")
         report("recording", 0, seconds * 1000)
 
         stats = {}
